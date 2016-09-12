@@ -180,13 +180,15 @@ class BackupController extends JControllerLegacy {
 
 		JLog::add('filesize: ' . filesize($filepath), JLog::DEBUG, 'com_backup');
 
-		if (@ob_end_flush() === false) {
-			JLog::add('could not flush and disable the output buffer, a reason could be that output buffer is globally disabled', JLog::ERROR, 'com_backup');
-			throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
+		while (ob_get_level() > 0) {
+			if (@ob_end_clean() === false) {
+				JLog::add('could not flush and disable the output buffer, a reason could be that output buffer is globally disabled', JLog::ERROR, 'com_backup');
+				throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
+			}
 		}
 
 		readfile($filepath);
-		$app->close(); // TODO enough? or exit?
+		exit; // TODO enough? $app->close() necessary? close() may corrupt download?
 	}
 
 	function deleteBackup() {

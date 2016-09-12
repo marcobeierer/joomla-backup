@@ -6,13 +6,13 @@
 defined('_JEXEC') or die('Restricted access');
 
 $app = JFactory::getApplication();
+$input = $app->input;
 
 $params = JComponentHelper::getParams('com_backup');
 $accessKey = $params->get('access_key', '');
 $encryptionPassword = $params->get('encryption_password', '');
 
-$input = $app->input;
-$accessKeyRequest = $input->get('access_key', '');
+$accessKeyRequest = preg_replace('/^Bearer /', '', $_SERVER['HTTP_AUTHORIZATION']);
 
 // TODO check if access key and encryption password are safe enough
 
@@ -33,9 +33,18 @@ JLog::addLogger(
 	array('com_backup')
 );
 
+$view = $input->getWord('view', '');
+$task = $input->getCmd('task', '');
+
+if ($view == '' || $task == '') {
+	JLog::add('view or task param had no value', JLog::ERROR, 'com_backup');
+	throw new Exception(JText::_('COM_BACKUP_BAD_REQUEST'), 400);
+}
+
+
 require_once(JPATH_COMPONENT . '/controller.php');
 
 $controller = JControllerLegacy::getInstance('Backup');
-$controller->execute(JFactory::getApplication()->input->getCmd('task'));
+$controller->execute($task);
 $controller->redirect();
 ?>
