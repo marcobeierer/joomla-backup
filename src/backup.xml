@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="component" version="3.5" method="upgrade">
+	<name>com_backup</name>
+	<creationDate>June 2016</creationDate>
+	<author>Marco Beierer</author>
+	<authorEmail>email@marcobeierer.com</authorEmail>
+	<authorUrl>https://www.marcobeierer.com</authorUrl>
+	<copyright>Copyright (c) 2016 Marco Beierer</copyright>
+	<license>GNU GPL v3 or later</license>
+	<version>1.0.0-beta.1</version>
+	<description>Backup component for Joomla.</description>
+
+	<administration>
+		<menu>backup</menu>
+		<files folder="backend">
+			<folder>views</folder>
+			<filename>access.xml</filename>
+			<filename>backup.php</filename>
+			<filename>config.xml</filename>
+			<filename>controller.php</filename>
+		</files>
+
+		<languages folder="language/backend">
+			<language tag="en-GB">en-GB/en-GB.com_backup.ini</language>
+			<language tag="en-GB">en-GB/en-GB.com_backup.sys.ini</language>
+		</languages>
+	</administration>
+
+	<files folder="frontend">
+		<folder>libs</folder>
+		<filename>backup.php</filename>
+		<filename>controller.php</filename>
+	</files>
+
+	<languages folder="language/frontend">
+		<language tag="en-GB">en-GB/en-GB.com_backup.ini</language>
+	</languages>
+
+	<media folder="media" destination="com_backup">
+		<folder>backups</folder>
+		<file>index.html</file>
+	</media>
+
+	<updateservers>
+		<server type="extension" name="Backup Update Site">https://static.marcobeierer.com/joomla-extensions/backup/update.xml</server>
+	</updateservers>
+</extension>

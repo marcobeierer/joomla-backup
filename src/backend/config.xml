@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+	<fieldset
+		name="backup"
+		label="COM_BACKUP_CONFIG_LABEL"
+		description="COM_BACKUP_CONFIG_DESC">
+		
+		<field
+			name="access_key"
+			type="text"
+			label="COM_BACKUP_FIELD_ACCESS_KEY_LABEL"
+			description="COM_BACKUP_FIELD_ACCESS_KEY_DESC"
+			default=""
+			required="true"
+		/>
+
+		<field
+			name="encryption_password"
+			type="text"
+			label="COM_BACKUP_FIELD_ENCRYPTION_PASSWORD_LABEL"
+			description="COM_BACKUP_FIELD_ENCRYPTION_PASSWORD_DESC"
+			default=""
+			required="true"
+		/>
+	</fieldset>
+
+	<fieldset
+		name="permissions"
+		label="JCONFIG_PERMISSIONS_LABEL"
+		description="JCONFIG_PERMISSIONS_DESC">
+
+		<field
+			name="rules"
+			type="rules"
+			label="JCONFIG_PERMISSIONS_LABEL"
+			class="inputbox"
+			validate="rules"
+			filter="rules"
+			component="com_backup"
+			section="component"
+		/>
+	</fieldset>
+</config>
