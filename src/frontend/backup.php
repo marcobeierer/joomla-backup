@@ -12,14 +12,6 @@ $params = JComponentHelper::getParams('com_backup');
 $accessKey = $params->get('access_key', '');
 $encryptionPassword = $params->get('encryption_password', '');
 
-$accessKeyRequest = preg_replace('/^Bearer /', '', $_SERVER['HTTP_AUTHORIZATION']);
-
-// TODO check if access key and encryption password are safe enough
-
-if (!$accessKey || !$accessKeyRequest || !$encryptionPassword || strlen($accessKey) < 16 || strlen($encryptionPassword) < 16 || $accessKey !== $accessKeyRequest) {
-	throw new Exception(JText::_('COM_BACKUP_UNAUTHORIZED'), 401);
-}
-
 $logLevel = JLog::ALL;
 if ($input->get('debug', '0') !== '1') {
 	$logLevel &= ~JLog::DEBUG;
@@ -32,6 +24,21 @@ JLog::addLogger(
 	$logLevel,
 	array('com_backup')
 );
+
+$accessKeyRequest = preg_replace('/^Bearer /', '', $_SERVER['HTTP_AUTHORIZATION']);
+if ($accessKeyRequest === NULL) {
+	JLog::add('removal of Bearer failed, authorization value was: ' . $_SERVER['HTTP_AUTHORIZATION'], JLog::ERROR, 'com_backup');
+	throw new Exception(JText::_('COM_BACKUP_BAD_REQUEST'), 400);
+}
+
+
+//JLog::add(print_r($_SERVER, true), JLog::ERROR, 'com_backup');
+
+// TODO check if access key and encryption password are safe enough
+
+if (!$accessKey || !$accessKeyRequest || !$encryptionPassword || strlen($accessKey) < 16 || strlen($encryptionPassword) < 16 || $accessKey !== $accessKeyRequest) {
+	throw new Exception(JText::_('COM_BACKUP_UNAUTHORIZED'), 401);
+}
 
 $view = $input->getWord('view', '');
 $task = $input->getCmd('task', '');
