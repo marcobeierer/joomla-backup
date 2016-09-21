@@ -30,6 +30,7 @@
 		<folder>libs</folder>
 		<filename>backup.php</filename>
 		<filename>controller.php</filename>
+		<filename>router.php</filename>
 	</files>
 
 	<languages folder="language/frontend">
