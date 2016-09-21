@@ -290,19 +290,43 @@ class CreateBackupTask {
 			return false;
 		}
 
+		$source = realpath($source);
+
 		$filesDirectory = '001_files';
+		$sourceStat = stat($source);
+
+		if ($sourceStat === false) {
+			JLog::add('could not stat source dir ' . $source, JLog::ERROR, 'com_backup');
+			return false;
+		}
 
 		if (!$archive->addEmptyDir($filesDirectory)) {
 			JLog::add('could not add empty dir ' . $filesDirectory, JLog::ERROR, 'com_backup');
 			return false;
 		}
+		
+		if (!$archive->setExternalAttributesName($filesDirectory . '/', ZipArchive::OPSYS_UNIX, $sourceStat['mode'] << 16)) {
+			JLog::add('could not set external attributes for dir ' . $filesDirectory, JLog::ERROR, 'com_backup');
+			return false;
+		}
 
-		if (!$archive->addFile($sqlDumpFilepath, '002_database.sql')) {
+		$databaseFilename = '002_database.sql';
+		$databaseStat = stat($sqlDumpFilepath);
+
+		if ($databaseStat === false) {
+			JLog::add('could not stat database file ' . $sqlDumpFilepath, JLog::ERROR, 'com_backup');
+			return false;
+		}
+
+		if (!$archive->addFile($sqlDumpFilepath, $databaseFilename)) {
 			JLog::add('could not add sql file ' . $sqlDumpFilepath, JLog::ERROR, 'com_backup');
 			return false;
 		}
 
-		$source = realpath($source);
+		if (!$archive->setExternalAttributesName($databaseFilename, ZipArchive::OPSYS_UNIX, $databaseStat['mode'] << 16)) {
+			JLog::add('could not set external attributes for file ' . $databaseFilename, JLog::ERROR, 'com_backup');
+			return false;
+		}
 
 		$iterator = new RecursiveDirectoryIterator($source);
 		$iterator->setFlags(RecursiveDirectoryIterator::SKIP_DOTS);
@@ -311,10 +335,17 @@ class CreateBackupTask {
 		// TODO is there a cleaner way, where methods like x->isFile() and x->getFilename are provided? thus like used in download()
 		foreach ($paths as $path) {
 			$path = realpath($path);
+			$stat = stat($path);
 
 			if (is_dir($path)) {
-				if (!$archive->addEmptyDir($filesDirectory . '/' . str_replace($source . '/', '', $path . '/'))) {
+				$pathInArchive = $filesDirectory . '/' . str_replace($source . '/', '', $path . '/');
+				if (!$archive->addEmptyDir($pathInArchive)) {
 					JLog::add('could not add empty dir ' . $path, JLog::ERROR, 'com_backup');
+					return false;
+				}
+
+				if (!$archive->setExternalAttributesName($pathInArchive, ZipArchive::OPSYS_UNIX, $stat['mode'] << 16)) {
+					JLog::add('could not set external attributes for dir ' . $pathInArchive, JLog::ERROR, 'com_backup');
 					return false;
 				}
 			} else if (is_file($path)) {
@@ -325,13 +356,20 @@ class CreateBackupTask {
 					}
 				}
 
-				if (!$archive->addFile($path, $filesDirectory . '/' . str_replace($source . '/', '', $path))) {
+				$pathInArchive = $filesDirectory . '/' . str_replace($source . '/', '', $path);
+				if (!$archive->addFile($path, $pathInArchive)) {
 					JLog::add('could not add file ' . $path, JLog::ERROR, 'com_backup');
+					return false;
+				}
+
+				if (!$archive->setExternalAttributesName($pathInArchive, ZipArchive::OPSYS_UNIX, $stat['mode'] << 16)) {
+					JLog::add('could not set external attributes for file ' . $pathInArchive, JLog::ERROR, 'com_backup');
 					return false;
 				}
 			} else {
 				JLog::add('path was not a file nor a directory' . $path, JLog::WARNING, 'com_backup');
 			}
+
 		}
 
 		return $archive->close();
