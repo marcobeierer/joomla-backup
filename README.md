@@ -16,6 +16,7 @@ The backups directory is protected by a .htaccess file. Please make sure that yo
 - New folder structure of backup archive.
 - RESTful API layout.
 - Preserve UNIX permissions.
+- Added PHP and zip extension version errors and warnings.
 
 ### 1.0.0-beta.1
 *Release date: 28th June 2016*
