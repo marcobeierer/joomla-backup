@@ -114,6 +114,7 @@ class BackupController extends JControllerLegacy {
 
 		// create database dump
 		if (!$task->createDBDump($config->get('dbtype'), $config->get('host'), $config->get('db'), $config->get('user'), $config->get('password'), $sqlDumpFilepath, $sqlDumpPath)) {
+			JLog::add('could not create database dump', JLog::ERROR, 'com_backup');
 			throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
 		}
 
@@ -125,6 +126,7 @@ class BackupController extends JControllerLegacy {
 		);
 
 		if (!$task->createZIPArchive(JPATH_ROOT, $zipFilepath, $sqlDumpFilepath, $ignoreFilesUnderPaths)) {
+			JLog::add('could not create zip archive', JLog::ERROR, 'com_backup');
 			throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
 		}
 
@@ -133,6 +135,7 @@ class BackupController extends JControllerLegacy {
 
 		$failedOrMetaData = $task->encryptZIPArchive($password, $zipFilepath, $this->backupsBasePath, $date, $filenameBase);
 		if ($failedOrMetaData === false) {
+			JLog::add('could not encrypt zip archive', JLog::ERROR, 'com_backup');
 			throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
 		}
 
