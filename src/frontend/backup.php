@@ -25,6 +25,16 @@ JLog::addLogger(
 	array('com_backup')
 );
 
+if (version_compare(PHP_VERSION, '5.6.0') === -1) {
+	JLog::add('the component requires at least PHP 5.6.0');
+	throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
+}
+
+if (version_compare(phpversion('zip'), '1.12.4') === -1) {
+	JLog::add('the component requires at least the version 1.12.4 of the PHP zip extension');
+	throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
+}
+
 $accessKeyRequest = preg_replace('/^Bearer /', '', $_SERVER['HTTP_AUTHORIZATION']);
 if ($accessKeyRequest === NULL) {
 	JLog::add('removal of Bearer failed, authorization value was: ' . $_SERVER['HTTP_AUTHORIZATION'], JLog::ERROR, 'com_backup');
