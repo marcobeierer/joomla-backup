@@ -120,10 +120,11 @@ class BackupController extends JControllerLegacy {
 		// create zip archive
 		$ignoreFilesUnderPaths = array(
 			sprintf('%s/files/', $this->backupsBasePath),
+			sprintf('%s/sql/', $this->backupsBasePath),
 			sprintf('%s/tmp/', $this->backupsBasePath)
 		);
 
-		if (!$task->createZIPArchive(JPATH_ROOT, $zipFilepath, $ignoreFilesUnderPaths)) {
+		if (!$task->createZIPArchive(JPATH_ROOT, $zipFilepath, $sqlDumpFilepath, $ignoreFilesUnderPaths)) {
 			throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
 		}
 
@@ -270,7 +271,7 @@ class CreateBackupTask {
 		return true;
 	}
 
-	function createZIPArchive($source, $destination, $ignoreFilesUnderPaths = array()) {
+	function createZIPArchive($source, $destination, $sqlDumpFilepath, $ignoreFilesUnderPaths = array()) {
 		if (!file_exists($source)) {
 			JLog::add('source does not exist', JLog::ERROR, 'com_backup');
 			return false;
@@ -289,6 +290,18 @@ class CreateBackupTask {
 			return false;
 		}
 
+		$filesDirectory = '001_files';
+
+		if (!$archive->addEmptyDir($filesDirectory)) {
+			JLog::add('could not add empty dir ' . $filesDirectory, JLog::ERROR, 'com_backup');
+			return false;
+		}
+
+		if (!$archive->addFile($sqlDumpFilepath, '002_database.sql')) {
+			JLog::add('could not add sql file ' . $sqlDumpFilepath, JLog::ERROR, 'com_backup');
+			return false;
+		}
+
 		$source = realpath($source);
 
 		$iterator = new RecursiveDirectoryIterator($source);
@@ -300,7 +313,7 @@ class CreateBackupTask {
 			$path = realpath($path);
 
 			if (is_dir($path)) {
-				if (!$archive->addEmptyDir(str_replace($source . '/', '', $path . '/'))) {
+				if (!$archive->addEmptyDir($filesDirectory . '/' . str_replace($source . '/', '', $path . '/'))) {
 					JLog::add('could not add empty dir ' . $path, JLog::ERROR, 'com_backup');
 					return false;
 				}
@@ -312,7 +325,7 @@ class CreateBackupTask {
 					}
 				}
 
-				if (!$archive->addFile($path, str_replace($source . '/', '', $path))) {
+				if (!$archive->addFile($path, $filesDirectory . '/' . str_replace($source . '/', '', $path))) {
 					JLog::add('could not add file ' . $path, JLog::ERROR, 'com_backup');
 					return false;
 				}
