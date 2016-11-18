@@ -11,6 +11,10 @@ The backups directory is protected by a .htaccess file. Please make sure that yo
 
 ## Changelog
 
+### 1.0.0-rc.2
+*Release date: 18th November 2016*
+- Added checks in backend for valid encryption password and access key.
+
 ### 1.0.0-rc.1
 *Release date: 23th October 2016*
 - No changes, just new version because beta is production ready.
