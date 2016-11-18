@@ -8,15 +8,27 @@ defined('_JEXEC') or die('Restricted access');
 ?>
 
 <div class="bootstrap3" style="margin-top: 10px;">
-	<?php if (version_compare(PHP_VERSION, '5.6.0') === -1): ?>
+	<?php if ($this->phpVersionToOld): ?>
 		<div class="alert alert-error">
 			The Backup component needs at least PHP 5.6 and does not work with your current PHP version. Please upgrade your PHP version.
 		</div>
 	<?php endif; ?>
 
-	<?php if (version_compare(phpversion('zip'), '1.12.4') === -1): ?>
+	<?php if ($this->zipLibVersionToOld): ?>
 		<div class="alert alert-error">
 			The Backup component needs at least the version 1.12.4 of the PHP zip extension and does not work with the current version of your zip extension. Upgrading your PHP version might help to solve the problem.
+		</div>
+	<?php endif; ?>
+
+	<?php if (!$this->hasValidAccessKey): ?>
+		<div class="alert alert-error">
+			No access key set or access key is not long enough. It should have at least 16 characters.
+		</div>
+	<?php endif; ?>
+
+	<?php if (!$this->hasValidEncryptionPassword): ?>
+		<div class="alert alert-error">
+			No encryption password set or encryption password is not long enough. It should have at least 16 characters.
 		</div>
 	<?php endif; ?>
 

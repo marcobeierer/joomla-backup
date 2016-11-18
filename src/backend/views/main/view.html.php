@@ -18,7 +18,17 @@ class BackupViewMain extends JViewLegacy {
 		//JHtml::_('jquery.framework');
 
 		//$doc = JFactory::getDocument();
-		//$params = JComponentHelper::getParams('com_backup');
+		
+		$params = JComponentHelper::getParams('com_backup');
+
+		$accessKey = $params->get('access_key', '');
+		$encryptionPassword = $params->get('encryption_password', '');
+
+		$this->hasValidAccessKey = $accessKey && strlen($accessKey) >= 16;
+		$this->hasValidEncryptionPassword = $encryptionPassword && strlen($encryptionPassword) >= 16; 
+
+		$this->phpVersionToOld = version_compare(PHP_VERSION, '5.6.0') === -1;
+		$this->zipLibVersionToOld = version_compare(phpversion('zip'), '1.12.4') === -1;
 
 		// TODO check if all necessary function available and secure keys are set
 
