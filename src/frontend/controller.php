@@ -254,12 +254,12 @@ class CreateBackupTask {
 			return false;
 		}
 
-		if ($dbDriver == 'mysqli') {
+		if ($dbDriver == 'mysqli' || $dbDriver == 'jdiction_mysqli') {
 			$dbDriver = 'mysql';
 		}
 
 		if ($dbDriver != 'mysql') {
-			JLog::add('only MySQL database is supported', JLog::ERROR, 'com_backup');
+			JLog::add('only MySQL database is supported, driver was ' . $dbDriver, JLog::ERROR, 'com_backup');
 			return false;
 		}
 
