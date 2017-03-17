@@ -35,9 +35,16 @@ if (version_compare(phpversion('zip'), '1.12.4') === -1) {
 	throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
 }
 
-$httpAuthorization = $_SERVER['HTTP_AUTHORIZATION'];
-if ($httpAuthorization === NULL) {
+$httpAuthorization = '';
+if (isset($_SERVER['HTTP_AUTHORIZATION']) && $_SERVER['HTTP_AUTHORIZATION'] !== NULL) {
+	$httpAuthorization = $_SERVER['HTTP_AUTHORIZATION'];
+}
+else if (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION']) && $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] !== NULL) {
 	$httpAuthorization = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+}
+else {
+	JLog::add('no HTTP_AUTHORIZATION header was provided', JLog::ERROR, 'com_backup');
+	throw new Exception(JText::_('COM_BACKUP_BAD_REQUEST'), 400);
 }
 
 $accessKeyRequest = preg_replace('/^Bearer /', '', $httpAuthorization);
