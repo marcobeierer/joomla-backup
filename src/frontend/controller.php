@@ -480,7 +480,7 @@ class CreateBackupTask {
 		$hmacOfArchive = hash_hmac_file($hmacHashAlgorithm, $finalDestinationFilepath, $keyHMAC);
 		$hmacOfIV = hash_hmac($hmacHashAlgorithm, $initialIV, $keyHMAC);
 
-		$hashAlgorithm = $hmacHashAlgorithm;
+		$hashAlgorithm = JComponentHelper::getParams('com_backup')->get('hash_algorithm', 'sha256');
 		$hashOfFile = hash_file($hashAlgorithm, $finalDestinationFilepath);
 
 		$metaData = new stdClass;
