@@ -11,6 +11,9 @@ The backups directory is protected by a .htaccess file. Please make sure that yo
 
 ## Changelog
 
+### 1.0.0-rc.3
+- Added check for REDIRECT_HTTP_AUTHORIZATION header if HTTP_AUTHORIZATION is not set.
+
 ### 1.0.0-rc.2
 *Release date: 18th November 2016*
 - Added checks in backend for valid encryption password and access key.

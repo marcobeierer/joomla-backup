@@ -35,9 +35,14 @@ if (version_compare(phpversion('zip'), '1.12.4') === -1) {
 	throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
 }
 
-$accessKeyRequest = preg_replace('/^Bearer /', '', $_SERVER['HTTP_AUTHORIZATION']);
+$httpAuthorization = $_SERVER['HTTP_AUTHORIZATION'];
+if ($httpAuthorization === NULL) {
+	$httpAuthorization = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+}
+
+$accessKeyRequest = preg_replace('/^Bearer /', '', $httpAuthorization);
 if ($accessKeyRequest === NULL) {
-	JLog::add('removal of Bearer failed, authorization value was: ' . $_SERVER['HTTP_AUTHORIZATION'], JLog::ERROR, 'com_backup');
+	JLog::add('removal of Bearer failed, authorization value was: ' . $httpAuthorization, JLog::ERROR, 'com_backup');
 	throw new Exception(JText::_('COM_BACKUP_BAD_REQUEST'), 400);
 }
 
