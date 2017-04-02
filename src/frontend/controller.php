@@ -1,12 +1,13 @@
 <?php
 /*
- * @copyright  Copyright (C) 2016 Marco Beierer. All rights reserved.
+ * @copyright  Copyright (C) 2016 - 2017 Marco Beierer. All rights reserved.
  * @license    http://www.gnu.org/licenses/gpl-3.0.html GNU/GPL
  */
 defined('_JEXEC') or die('Restricted access');
 
 require_once(JPATH_COMPONENT_SITE . '/libs/mysqldump.php');
 
+// TODO split up into BackupController and BackupsController
 class BackupController extends JControllerLegacy {
 	private $mediaBasePath;
 	private $backupsBasePath;
@@ -192,7 +193,7 @@ class BackupController extends JControllerLegacy {
 		}
 
 		readfile($filepath);
-		exit; // TODO enough? $app->close() necessary? close() may corrupt download?
+		exit; // TODO enough? $app->close() necessary? close() may corrupt download? // close() prevents display of error messages
 	}
 
 	function deleteBackup() {
