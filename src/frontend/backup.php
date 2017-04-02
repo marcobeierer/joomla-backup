@@ -20,7 +20,7 @@ if ($input->get('debug', '0') !== '1' && $debugMode !== '1') {
 
 JLog::addLogger(
 	array(
-		'text_file' => 'com_backup.errors.php' // also used in logs_controller.php
+		'text_file' => 'com_backup.errors.php' // also used in logs_controller.php and view.html.php
 	),
 	$logLevel,
 	array('com_backup')

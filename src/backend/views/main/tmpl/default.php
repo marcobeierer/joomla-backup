@@ -32,6 +32,11 @@ defined('_JEXEC') or die('Restricted access');
 		</div>
 	<?php endif; ?>
 
+	<?php if ($this->logData): ?>
+		<h3>Logs</h3>
+		<code style="display: block;"><?php echo nl2br($this->logData); ?></code>
+	<?php endif; ?>
+
 	<h3>Credits</h3>
 	<p>The Backup component for Joomla is developed and maintained by <a href="https://www.marcobeierer.com">Marco Beierer</a>. It is part of the <a href="https://www.websitetools.pro">Website Tools Professional</a> project.</p>
 </div>
