@@ -12,6 +12,7 @@ The backups directory is protected by a .htaccess file. Please make sure that yo
 ## Changelog
 
 ### 1.0.0-rc.3
+*Release date: 2nd April 2017*
 - Added check for REDIRECT_HTTP_AUTHORIZATION header if HTTP_AUTHORIZATION is not set.
 - Added support for jdiction_mysqli database driver.
 - Made hash algorithm selectable in options.
