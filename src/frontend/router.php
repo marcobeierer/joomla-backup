@@ -1,6 +1,6 @@
 <?php
 /*
- * @copyright  Copyright (C) 2016 Marco Beierer. All rights reserved.
+ * @copyright  Copyright (C) 2016 - 2017 Marco Beierer. All rights reserved.
  * @license    http://www.gnu.org/licenses/gpl-3.0.html GNU/GPL
  */
 defined('_JEXEC') or die('Restricted access');
@@ -33,6 +33,13 @@ function BackupParseRoute($segments) {
 		else {
 			unset($vars['view']);
 			unset($vars['filename']);
+		}
+	}
+	else if ($view == 'logs') {
+		$vars['view'] = $view;
+
+		if ($method == 'GET') {
+			$vars['task'] = 'fetchLogs';
 		}
 	}
 

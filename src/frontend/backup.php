@@ -19,7 +19,7 @@ if ($input->get('debug', '0') !== '1') {
 
 JLog::addLogger(
 	array(
-		'text_file' => 'com_backup.errors.php'
+		'text_file' => 'com_backup.errors.php' // also used in logs_controller.php
 	),
 	$logLevel,
 	array('com_backup')
@@ -71,9 +71,17 @@ if ($view == '' || $task == '') {
 }
 
 
-require_once(JPATH_COMPONENT . '/controller.php');
 
-$controller = JControllerLegacy::getInstance('Backup');
+switch($view) {
+case 'logs':
+	require_once(JPATH_COMPONENT . '/logs_controller.php');
+	$controller = JControllerLegacy::getInstance('Logs');
+	break;
+default:
+	require_once(JPATH_COMPONENT . '/controller.php');
+	$controller = JControllerLegacy::getInstance('Backup');
+}
+
 $controller->execute($task);
 $controller->redirect();
 ?>
