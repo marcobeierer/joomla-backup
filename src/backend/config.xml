@@ -33,6 +33,17 @@
 			<option value="sha256">SHA-256</option>
 			<option value="sha512">SHA-512</option>
 		</field>
+
+		<field
+			name="debug_mode"
+			type="list"
+			label="COM_BACKUP_FIELD_DEBUG_MODE_LABEL"
+			description="COM_BACKUP_FIELD_DEBUG_MODE_DESC"
+			default="0"
+			required="true">
+			<option value="0">JNO</option>
+			<option value="1">JYES</option>
+		</field>
 	</fieldset>
 
 	<fieldset

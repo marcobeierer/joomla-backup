@@ -15,14 +15,11 @@ class BackupViewMain extends JViewLegacy {
 			JToolbarHelper::preferences('com_backup');
 		}
 
-		//JHtml::_('jquery.framework');
-
-		//$doc = JFactory::getDocument();
-		
 		$params = JComponentHelper::getParams('com_backup');
 
 		$accessKey = $params->get('access_key', '');
 		$encryptionPassword = $params->get('encryption_password', '');
+		$debugMode = $params->get('debug_mode', '0');
 
 		$this->hasValidAccessKey = $accessKey && strlen($accessKey) >= 16;
 		$this->hasValidEncryptionPassword = $encryptionPassword && strlen($encryptionPassword) >= 16; 
@@ -30,9 +27,25 @@ class BackupViewMain extends JViewLegacy {
 		$this->phpVersionToOld = version_compare(PHP_VERSION, '5.6.0') === -1;
 		$this->zipLibVersionToOld = version_compare(phpversion('zip'), '1.12.4') === -1;
 
-		// TODO check if all necessary function available and secure keys are set
+		$this->logData = $this->logData($debugMode === '1');
 
 		parent::display();
 	}
 
+	function logData($debugMode) {
+		if (!$debugMode) {
+			return false;
+		}
+
+		$config = JFactory::getConfig();
+
+		$logPath = $config->get('log_path');
+		$logsFilepath = $logPath . '/com_backup.errors.php'; // also used in backup.php and logs_controller.php
+
+		if (!file_exists($logsFilepath)) {
+			return false;
+		}
+
+		return file_get_contents($logsFilepath);
+	}
 }

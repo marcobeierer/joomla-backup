@@ -16,6 +16,8 @@ The backups directory is protected by a .htaccess file. Please make sure that yo
 - Added support for jdiction_mysqli database driver.
 - Made hash algorithm selectable in options.
 - Implemented logs endpoint.
+- Added debug mode option.
+- View logs in backend in debug mode.
 
 ### 1.0.0-rc.2
 *Release date: 18th November 2016*

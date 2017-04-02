@@ -17,7 +17,7 @@ class LogsController extends JControllerLegacy {
 		$config = JFactory::getConfig();
 
 		$logPath = $config->get('log_path');
-		$logsFilepath = $logPath . '/com_backup.errors.php'; // also used in backup.php // TODO possible to get from JLog?
+		$logsFilepath = $logPath . '/com_backup.errors.php'; // also used in backup.php and view.html.php // TODO possible to get from JLog?
 
 		JLog::add('logsFilepath: ' . $logsFilepath, JLog::DEBUG, 'com_backup');
 
