@@ -18,6 +18,7 @@
 			<filename>backup.php</filename>
 			<filename>config.xml</filename>
 			<filename>controller.php</filename>
+			<filename>logs_controller.php</filename>
 		</files>
 
 		<languages folder="language/backend">
