@@ -11,9 +11,10 @@ $input = $app->input;
 $params = JComponentHelper::getParams('com_backup');
 $accessKey = $params->get('access_key', '');
 $encryptionPassword = $params->get('encryption_password', '');
+$debugMode = $params->get('debug_mode', '0');
 
 $logLevel = JLog::ALL;
-if ($input->get('debug', '0') !== '1') {
+if ($input->get('debug', '0') !== '1' && $debugMode !== '1') {
 	$logLevel &= ~JLog::DEBUG;
 }
 
