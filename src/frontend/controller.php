@@ -99,8 +99,12 @@ class BackupController extends JControllerLegacy {
 
 	private function setTimeLimit() {
 		if (set_time_limit(0) === false) {
-			JLog::add('call of set_time_limit() failed, probably PHP safeMode is enabled', JLog::ERROR, 'com_backup');
-			throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
+			JLog::add('call of set_time_limit(0) failed, probably PHP safeMode is enabled', JLog::WARNING, 'com_backup');
+			//throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
+		}
+
+		if (ini_set('max_execution_time', 0) === false) {
+			JLog::add('call of ini_set(\'max_execution_time\', 0) failed, probably PHP safeMode is enabled', JLog::WARNING, 'com_backup');
 		}
 	}
 
