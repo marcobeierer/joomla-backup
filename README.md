@@ -11,6 +11,9 @@ The backups directory is protected by a .htaccess file. Please make sure that yo
 
 ## Changelog
 
+### 1.0.0-rc.5
+- try to set max_execution_time to 0 and throw no exception if set_time_limit is not allowed
+
 ### 1.0.0-rc.4
 *Release date: 2nd April 2017*
 - Bugfix: Added logs_controller.php to manifest.
