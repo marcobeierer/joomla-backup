@@ -17,17 +17,17 @@ class BackupViewMain extends JViewLegacy {
 
 		$params = JComponentHelper::getParams('com_backup');
 
-		$accessKey = $params->get('access_key', '');
+		$this->accessKey = $params->get('access_key', '');
 		$encryptionPassword = $params->get('encryption_password', '');
-		$debugMode = $params->get('debug_mode', '0');
+		$this->debugMode = $params->get('debug_mode', '0') === '1';
 
-		$this->hasValidAccessKey = $accessKey && strlen($accessKey) >= 16;
+		$this->hasValidAccessKey = $this->accessKey && strlen($this->accessKey) >= 16;
 		$this->hasValidEncryptionPassword = $encryptionPassword && strlen($encryptionPassword) >= 16; 
 
 		$this->phpVersionToOld = version_compare(PHP_VERSION, '5.6.0') === -1;
 		$this->zipLibVersionToOld = version_compare(phpversion('zip'), '1.12.4') === -1;
 
-		$this->logData = $this->logData($debugMode === '1');
+		$this->logData = $this->logData($this->debugMode);
 
 		parent::display();
 	}

@@ -30,6 +30,7 @@
 		<folder>libs</folder>
 		<filename>backup.php</filename>
 		<filename>controller.php</filename>
+		<filename>lock_controller.php</filename>
 		<filename>logs_controller.php</filename>
 		<filename>router.php</filename>
 	</files>

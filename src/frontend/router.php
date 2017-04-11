@@ -38,10 +38,42 @@ function BackupParseRoute($segments) {
 	else if ($view == 'logs') {
 		$vars['view'] = $view;
 
-		if ($method == 'GET') {
+		switch($method) {
+		case 'GET':
 			$vars['task'] = 'fetchLogs';
+			break;
+		default:
+			unset($vars['view']);
 		}
 	}
+	else if ($view == 'lock') {
+		$vars['view'] = $view;
+
+		switch($method) {
+		case 'POST':
+			$vars['task'] = 'lock';
+			break;
+		case 'GET':
+			$vars['task'] = 'isLockedResponse';
+			break;
+		case 'DELETE':
+			$vars['task'] = 'unlock';
+			break;
+		default:
+			unset($vars['view']);
+		}
+	} 
+	/*else if ($view == 'cleanup') {
+		$vars['view'] = $view;
+
+		switch($method) {
+		case 'POST':
+			$vars['task'] = 'cleanup';
+			break;
+		default:
+			unset($vars['view']);
+		}
+	}*/
 
 	$vars['format'] = 'raw';
 	return $vars;

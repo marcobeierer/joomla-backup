@@ -2,6 +2,7 @@
 
 ## Requirements
 - htaccess support
+- SEF and URL Rewrite enabled
 
 ## Important
 The backups directory is protected by a .htaccess file. Please make sure that your webspace supports htaccess. Otherwise the backups could be downloaded by a stranger. That is unlikely because guessing the filename is nearly impossible and if someone guesses the filename, the backup is still encrypted, but an additional security layer (the htaccess protection) is never wrong.
@@ -12,7 +13,8 @@ The backups directory is protected by a .htaccess file. Please make sure that yo
 ## Changelog
 
 ### 1.0.0-rc.5
-- try to set max_execution_time to 0 and throw no exception if set_time_limit is not allowed
+- Try to set max_execution_time to 0 and throw no exception if set_time_limit is not allowed.
+- Implemented Lock and Unlock button in debug mode.
 
 ### 1.0.0-rc.4
 *Release date: 2nd April 2017*

@@ -6,29 +6,32 @@
 defined('_JEXEC') or die('Restricted access');
 
 require_once(JPATH_COMPONENT_SITE . '/libs/mysqldump.php');
+require_once(JPATH_COMPONENT . '/lock_controller.php');
 
 // TODO split up into BackupController and BackupsController
 class BackupController extends JControllerLegacy {
 	private $mediaBasePath;
 	private $backupsBasePath;
-	private $lockFilepath;
+	private $lockController;
 
 	function __construct($properties = null) {
+		// TODO shared with LockController
 		$this->mediaBasePath = sprintf('%s/media/com_backup', JPATH_ROOT);
 		$this->backupsBasePath = sprintf('%s/backups', $this->mediaBasePath);
-		$this->lockFilepath = sprintf('%s/tmp/backup.lock', $this->backupsBasePath);
 
-		if ($this->isLocked()) {
+		$this->lockController = JControllerLegacy::getInstance('Lock');
+
+		if ($this->lockController->isLocked()) {
 			throw new Exception(JText::_('COM_BACKUP_CONFLICT'), 409);
 		} else {
-			$this->lock();
+			$this->lockController->lock();
 		}
 
 		parent::__construct($properties);
 	}
 
 	function __destruct() {
-		$this->unlock();
+		$this->lockController->unlock();
 	}
 
 	function createBackup() {
@@ -57,32 +60,7 @@ class BackupController extends JControllerLegacy {
 		echo json_encode($metaData);
 	}
 
-	private function lock() {
-		if (!touch($this->lockFilepath)) {
-			JLog::add('could not create lock file: ' . $this->lockFilepath, JLog::ERROR, 'com_backup');
-			throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
-		}
-	}
-
-	private function unlock() {
-		if (file_exists($this->lockFilepath)) {
-			if (!unlink($this->lockFilepath)) {
-				JLog::add('could not delete lock file: ' . $this->lockFilepath, JLog::ERROR, 'com_backup');
-			}
-		}
-
-	}
-
-	private function isLocked() {
-		if (file_exists($this->lockFilepath)) {
-			JLog::add('lock file exists, backup already started or last backup was canceled', JLog::ERROR, 'com_backup');
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	// TODO expose via API?
+	// TODO expose via API? impl cleanupAll so that no params are required?
 	private function cleanup($sqlDumpFilepath, $zipFilepath) {
 		if (file_exists($sqlDumpFilepath)) {
 			if (!unlink($sqlDumpFilepath)) {
