@@ -13,15 +13,20 @@ class BackupController extends JControllerLegacy {
 	private $mediaBasePath;
 	private $backupsBasePath;
 	private $lockController;
+	private $requestStateFilepath;
 
 	function __construct($properties = null) {
 		// TODO shared with LockController
 		$this->mediaBasePath = sprintf('%s/media/com_backup', JPATH_ROOT);
 		$this->backupsBasePath = sprintf('%s/backups', $this->mediaBasePath);
+		$this->requestStateFilepath = sprintf('%s/tmp/requeststate.json', $this->backupsBasePath);
 
 		$this->lockController = JControllerLegacy::getInstance('Lock');
 
-		if ($this->lockController->isLocked()) {
+		// order matters
+		if ($this->isResumable()) {
+			// do nothing
+		} else if ($this->lockController->isLocked()) {
 			throw new Exception(JText::_('COM_BACKUP_CONFLICT'), 409);
 		} else {
 			$this->lockController->lock();
@@ -34,6 +39,83 @@ class BackupController extends JControllerLegacy {
 		$this->lockController->unlock();
 	}
 
+	private function isMultiStepMode() {
+		$mode = JFactory::getApplication()->input->getWord('mode', '');
+		return $mode === 'multistep';
+	}
+
+	private function isResumable() {
+		if (!$this->isMultiStepMode()) {
+			return false;
+		}
+
+		$isCreateBackupTask = JFactory::getApplication()->input->getCmd('task', '') === 'createBackup';
+		if (!$isCreateBackupTask) { // only create backup task is resumable
+			return false;
+		}
+
+		if (!file_exists($this->requestStateFilepath)) {
+			return false; // no need to resume because not started yet
+		}
+
+		return true;
+	}
+
+	// NOTE be carefull, this just works as long as the lockController or this controller has no state; if it would, this state needs to be saved
+	private function pause($nextStep, $date, $filenameBase, $sqlDumpPath, $sqlDumpFilepath, $zipFilepath) {
+		if (!$this->isMultiStepMode()) {
+			return;
+		}
+		
+		$requestState = new stdClass;
+		$requestState->nextStep = $nextStep;
+		$requestState->date = $date;
+		$requestState->filenameBase = $filenameBase;
+		$requestState->sqlDumpPath = $sqlDumpPath;
+		$requestState->sqlDumpFilepath = $sqlDumpFilepath;
+		$requestState->zipFilepath = $zipFilepath;
+
+		$jsonData = json_encode($requestState, JSON_PRETTY_PRINT);
+		if ($jsonData === false) {
+			JLog::add('could not encode as json: ' . $requestState, JLog::ERROR, 'com_backup');
+			throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
+		}
+
+		$success = file_put_contents($this->requestStateFilepath, $jsonData);
+		if ($success === false) {
+			JLog::add('could not write request state to file: ' . $this->requestStateFilepath, JLog::ERROR, 'com_backup');
+			throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
+		}
+
+		http_response_code(202); // accepted
+		exit;
+	}
+
+	private function getRequestState() {
+		if (!$this->isResumable()) {
+			return false;
+		}
+
+		$jsonData = file_get_contents($this->requestStateFilepath);
+		if ($jsonData === false) {
+			JLog::add('could not read request state from file: ' . $this->requestStateFilepath, JLog::ERROR, 'com_backup');
+			throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
+		}
+
+		$requestState = json_decode($jsonData);
+		if ($requestState === null) {
+			JLog::add('could not decode json: ' . $jsonData, JLog::ERROR, 'com_backup');
+			throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
+		}
+
+		if (!unlink($this->requestStateFilepath)) {
+			JLog::add('could not delete request state json data: ' . $this->requestStateFilepath, JLog::ERROR, 'com_backup');
+			throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
+		}
+
+		return $requestState;
+	}
+
 	function createBackup() {
 		//$filenameBase = sprintf('%s', date('Y.m.d-H:i:s'));
 		$date = date('c');
@@ -44,7 +126,12 @@ class BackupController extends JControllerLegacy {
 		$zipFilepath = sprintf('%s/tmp/%s-files.zip', $this->backupsBasePath, $filenameBase);
 
 		try {
-			$metaData = $this->createBackupx($date, $filenameBase, $sqlDumpPath, $sqlDumpFilepath, $zipFilepath);
+			if ($this->isResumable()) {
+				$requestState = $this->getRequestState();
+				$metaData = $this->createBackupx($requestState->date, $requestState->filenameBase, $requestState->sqlDumpPath, $requestState->sqlDumpFilepath, $requestState->zipFilepath, $requestState->nextStep);
+			} else {
+				$metaData = $this->createBackupx($date, $filenameBase, $sqlDumpPath, $sqlDumpFilepath, $zipFilepath);
+			}
 		} catch (\Exception $e) {
 			$this->cleanup($sqlDumpFilepath, $zipFilepath);
 			throw $e;
@@ -52,12 +139,18 @@ class BackupController extends JControllerLegacy {
 
 		$this->cleanup($sqlDumpFilepath, $zipFilepath);
 
+		$jsonData = json_encode($metaData);
+		if ($jsonData === false) {
+			JLog::add('could not encode as json: ' . $jsonData, JLog::ERROR, 'com_backup');
+			throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
+		}
+
 		$contentType = 'application/json';
 		JFactory::getDocument()->setMimeEncoding($contentType);
 		JResponse::setHeader('Content-Type', $contentType, true);
 
 		http_response_code(201); // created
-		echo json_encode($metaData);
+		echo $jsonData;
 	}
 
 	// TODO expose via API? impl cleanupAll so that no params are required?
@@ -86,40 +179,55 @@ class BackupController extends JControllerLegacy {
 		}
 	}
 
-	private function createBackupx($date, $filenameBase, $sqlDumpPath, $sqlDumpFilepath, $zipFilepath) {
+	private function createBackupx($date, $filenameBase, $sqlDumpPath, $sqlDumpFilepath, $zipFilepath, $nextStep = false) {
 		$this->setTimeLimit();
 
 		// init vars
 		$task = new CreateBackupTask;
 
 		$params = JComponentHelper::getParams('com_backup');
-		$config = JFactory::getConfig();
 
 		// create database dump
-		if (!$task->createDBDump($config->get('dbtype'), $config->get('host'), $config->get('db'), $config->get('user'), $config->get('password'), $sqlDumpFilepath, $sqlDumpPath)) {
-			JLog::add('could not create database dump', JLog::ERROR, 'com_backup');
-			throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
+		if ($nextStep === false || $nextStep === 'createDBDump') {
+			$config = JFactory::getConfig();
+
+			if (!$task->createDBDump($config->get('dbtype'), $config->get('host'), $config->get('db'), $config->get('user'), $config->get('password'), $sqlDumpFilepath, $sqlDumpPath)) {
+				JLog::add('could not create database dump', JLog::ERROR, 'com_backup');
+				throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
+			}
+
+			$this->pause('createZIPArchive', $date, $filenameBase, $sqlDumpPath, $sqlDumpFilepath, $zipFilepath);
+			$nextStep = false;
 		}
 
 		// create zip archive
-		$ignoreFilesUnderPaths = array(
-			sprintf('%s/files/', $this->backupsBasePath),
-			sprintf('%s/sql/', $this->backupsBasePath),
-			sprintf('%s/tmp/', $this->backupsBasePath)
-		);
+		if ($nextStep === false || $nextStep === 'createZIPArchive') {
+			$ignoreFilesUnderPaths = array(
+				sprintf('%s/files/', $this->backupsBasePath),
+				sprintf('%s/sql/', $this->backupsBasePath),
+				sprintf('%s/tmp/', $this->backupsBasePath)
+			);
 
-		if (!$task->createZIPArchive(JPATH_ROOT, $zipFilepath, $sqlDumpFilepath, $ignoreFilesUnderPaths)) {
-			JLog::add('could not create zip archive', JLog::ERROR, 'com_backup');
-			throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
+			if (!$task->createZIPArchive(JPATH_ROOT, $zipFilepath, $sqlDumpFilepath, $ignoreFilesUnderPaths)) {
+				JLog::add('could not create zip archive', JLog::ERROR, 'com_backup');
+				throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
+			}
+
+			$this->pause('encryptZIPArchive', $date, $filenameBase, $sqlDumpPath, $sqlDumpFilepath, $zipFilepath);
+			$nextStep = false;
 		}
 
 		// encrypt zip archive
-		$password = $params->get('encryption_password', '');
+		if ($nextStep === false || $nextStep === 'encryptZIPArchive') {
+			$password = $params->get('encryption_password', '');
 
-		$failedOrMetaData = $task->encryptZIPArchive($password, $zipFilepath, $this->backupsBasePath, $date, $filenameBase);
-		if ($failedOrMetaData === false) {
-			JLog::add('could not encrypt zip archive', JLog::ERROR, 'com_backup');
-			throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
+			$failedOrMetaData = $task->encryptZIPArchive($password, $zipFilepath, $this->backupsBasePath, $date, $filenameBase);
+			if ($failedOrMetaData === false) {
+				JLog::add('could not encrypt zip archive', JLog::ERROR, 'com_backup');
+				throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
+			}
+
+			$nextStep = false;
 		}
 
 		return $failedOrMetaData;
@@ -336,7 +444,7 @@ class CreateBackupTask {
 				}
 			} else if (is_file($path)) {
 				foreach ($ignoreFilesUnderPaths as $ignorePath) {
-					if (stripos($path, $ignorePath) === 0 && basename($path) != 'index.html') { // TODO fine a better solution to allow index.html
+					if (stripos($path, $ignorePath) === 0 && basename($path) != 'index.html') { // TODO find a better solution to allow index.html
 						JLog::add('file ignored: ' . $path, JLog::DEBUG, 'com_backup');
 						continue 2;
 					}
@@ -482,6 +590,10 @@ class CreateBackupTask {
 		$metaData->HMACOfIV = $hmacOfIV;
 
 		$jsonData = json_encode($metaData, JSON_PRETTY_PRINT);
+		if ($jsonData === false) {
+			JLog::add('could not encode as json: ' . $metaData, JLog::ERROR, 'com_backup');
+			throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
+		}
 
 		$metaDataFilepath = sprintf('%s.json', $finalDestinationFilepath);
 		if (file_exists($metaDataFilepath)) {

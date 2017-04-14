@@ -38,7 +38,7 @@ class LockController extends JControllerLegacy {
 
 	function isLocked() {
 		if (file_exists($this->lockFilepath)) {
-			JLog::add('lock file exists, backup already started or last backup was canceled, ' . $this->lockFilepath, JLog::WARNING, 'com_backup');
+			JLog::add('lock file exists: backup already started or last backup was canceled', JLog::WARNING, 'com_backup');
 			return true;
 		} else {
 			return false;
