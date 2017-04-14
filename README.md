@@ -12,6 +12,9 @@ The backups directory is protected by a .htaccess file. Please make sure that yo
 
 ## Changelog
 
+### 1.0.0-rc.7
+- Fixed display bug for some API calls.
+
 ### 1.0.0-rc.6
 *Release date: 14th April 2017*
 - Implemented multistep mode.

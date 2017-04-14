@@ -26,9 +26,11 @@ class BackupController extends JControllerLegacy {
 		// order matters
 		if ($this->isResumable()) {
 			// do nothing
-		} else if ($this->lockController->isLocked()) {
+		} 
+		else if ($this->lockController->isLocked()) {
 			throw new Exception(JText::_('COM_BACKUP_CONFLICT'), 409);
-		} else {
+		} 
+		else {
 			$this->lockController->lock();
 		}
 
