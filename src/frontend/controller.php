@@ -150,7 +150,9 @@ class BackupController extends JControllerLegacy {
 		JResponse::setHeader('Content-Type', $contentType, true);
 
 		http_response_code(201); // created
+
 		echo $jsonData;
+		exit;
 	}
 
 	// TODO expose via API? impl cleanupAll so that no params are required?

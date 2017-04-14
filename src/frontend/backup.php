@@ -71,8 +71,6 @@ if ($view == '' || $task == '') {
 	throw new Exception(JText::_('COM_BACKUP_BAD_REQUEST'), 400);
 }
 
-
-
 switch($view) {
 case 'logs':
 	require_once(JPATH_COMPONENT . '/logs_controller.php');

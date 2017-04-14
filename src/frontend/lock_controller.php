@@ -34,6 +34,7 @@ class LockController extends JControllerLegacy {
 
 	function isLockedResponse() {
 		echo json_encode($this->isLocked());
+		exit;
 	}
 
 	function isLocked() {
