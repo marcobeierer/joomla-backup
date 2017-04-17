@@ -80,6 +80,10 @@ case 'lock':
 	require_once(JPATH_COMPONENT . '/lock_controller.php');
 	$controller = JControllerLegacy::getInstance('Lock');
 	break;
+case 'files':
+	require_once(JPATH_COMPONENT . '/files_controller.php');
+	$controller = JControllerLegacy::getInstance('Files');
+	break;
 default:
 	require_once(JPATH_COMPONENT . '/controller.php');
 	$controller = JControllerLegacy::getInstance('Backup');

@@ -89,6 +89,35 @@ defined('_JEXEC') or die('Restricted access');
 				});
 			});
 		</script>
+
+		<h3>Files</h3>
+		<ul id="files">
+			<li>Loading ...</li>
+		</ul>
+
+		<script type="text/javascript">
+			jQuery(document).ready(function() {
+				jQuery.ajax({
+					url: '<?php echo JURI::root(); ?>component/backup/files',
+					dataType: 'json',
+					headers: {
+						'Authorization': 'Bearer <?php echo $this->accessKey; ?>'
+					}
+				})
+				.done(function(files) {
+					var ulFiles = jQuery('ul#files');
+					ulFiles.empty();
+
+					if (files.length == 0) {
+						ulFiles.append(jQuery('<li>').text('no files found'));
+					}
+
+					files.forEach(function(file) {
+						ulFiles.append(jQuery('<li>').text(file));
+					});
+				});
+			});
+		</script>
 	<?php endif; ?>
 
 	<h3>Credits</h3>

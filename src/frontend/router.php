@@ -63,6 +63,17 @@ function BackupParseRoute($segments) {
 			unset($vars['view']);
 		}
 	} 
+	else if ($view = 'files') {
+		$vars['view'] = $view;
+
+		switch($method) {
+		case 'GET':
+			$vars['task'] = 'getFiles';
+			break;
+		default:
+			unset($vars['view']);
+		}
+	}
 	/*else if ($view == 'cleanup') {
 		$vars['view'] = $view;
 
