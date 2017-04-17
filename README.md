@@ -12,6 +12,10 @@ The backups directory is protected by a .htaccess file. Please make sure that yo
 
 ## Changelog
 
+### 1.0.0-rc.8
+*Release date: 18th April 2017*
+- View files in debug mode.
+
 ### 1.0.0-rc.7
 *Release date: 15th April 2017*
 - Fixed display bug for some API calls.
