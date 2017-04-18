@@ -44,4 +44,34 @@ class FilesController extends JControllerLegacy {
 		echo $jsonData;
 		exit;
 	}
+
+	function cleanup() {
+		$iterator = new RecursiveDirectoryIterator($this->backupsBasePath);
+		$iterator->setFlags(RecursiveDirectoryIterator::SKIP_DOTS);
+
+		$test = !(JFactory::getApplication()->input->get('test') === 'false');
+
+		$paths = new RecursiveIteratorIterator($iterator, RecursiveIteratorIterator::SELF_FIRST);
+		foreach ($paths as $path) {
+			$path = realpath($path);
+
+			if (is_file($path)) {
+				if (!preg_match('/\/index.html$/', $path) && !preg_match('/\.htaccess$/', $path)) {
+					if ($test) {
+						JLog::add('test, this file would be deleted: ' . $path, JLog::DEBUG, 'com_backup');
+						continue;
+					}
+
+					if (!unlink($path)) {
+						JLog::add('could not delete file: ' . $path, JLog::ERROR, 'com_backup');
+						throw new Exception(JText::_('COM_BACKUP_INTERNAL_SERVER_ERROR'), 500);
+					}
+
+					JLog::add('deleted file: ' . $path, JLog::DEBUG, 'com_backup');
+				}
+			}
+		}
+
+		exit;
+	}
 }

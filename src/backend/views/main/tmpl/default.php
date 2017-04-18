@@ -118,6 +118,40 @@ defined('_JEXEC') or die('Restricted access');
 				});
 			});
 		</script>
+
+		<h3>Cleanup</h3>
+		<p>WARNING: All files, including all backups, will be deleted!</p>
+		<p>
+			<button id="cleanupBtn" class="btn">Cleanup</button>
+			<button id="cleanupTestBtn" class="btn">Cleanup Test (see log for files that will be deleted)</button>
+		</p>
+
+		<script type="text/javascript">
+			jQuery('#cleanupBtn').click(function() {
+				jQuery('#cleanupBtn').prop('disabled', true);
+				cleanup(false);
+			});
+
+			jQuery('#cleanupTestBtn').click(function() {
+				cleanup(true);
+			});
+
+			function cleanup(test) {
+				jQuery.ajax({
+					url: '<?php echo JURI::root(); ?>component/backup/files/?test=' + test,
+					method: 'DELETE',
+					headers: {
+						'Authorization': 'Bearer <?php echo $this->accessKey; ?>'
+					}
+				})
+				.done(function(data) {
+					alert('successfully cleaned up');
+				})
+				.fail(function() {
+					alert('something went wrong');
+				});
+			}
+		</script>
 	<?php endif; ?>
 
 	<h3>Credits</h3>

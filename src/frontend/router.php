@@ -70,6 +70,9 @@ function BackupParseRoute($segments) {
 		case 'GET':
 			$vars['task'] = 'getFiles';
 			break;
+		case 'DELETE':
+			$vars['task'] = 'cleanup';
+			break;
 		default:
 			unset($vars['view']);
 		}
