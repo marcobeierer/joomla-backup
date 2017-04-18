@@ -12,6 +12,10 @@ The backups directory is protected by a .htaccess file. Please make sure that yo
 
 ## Changelog
 
+### 1.0.0-rc.10
+*Release date: 18th April 2017*
+- Critical mutlistep bugfix, temp files (zip and sql) were not deleted.
+
 ### 1.0.0-rc.9
 *Release date: 18th April 2017*
 - Added cleanup function in debug mode.
