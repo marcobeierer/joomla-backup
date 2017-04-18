@@ -127,14 +127,23 @@ class BackupController extends JControllerLegacy {
 		$sqlDumpFilepath = sprintf('%s/%s.sql', $sqlDumpPath, $filenameBase);
 		$zipFilepath = sprintf('%s/tmp/%s-files.zip', $this->backupsBasePath, $filenameBase);
 
+		$nextStep = false;
+
+		if ($this->isResumable()) {
+			$requestState = $this->getRequestState();
+
+			$date = $requestState->date;
+			$filenameBase = $requestState->filenameBase;
+			$sqlDumpPath = $requestState->sqlDumpPath;
+			$sqlDumpFilepath = $requestState->sqlDumpFilepath;
+			$zipFilepath = $requestState->zipFilepath;
+			$nextStep = $requestState->nextStep;
+		} 
+
 		try {
-			if ($this->isResumable()) {
-				$requestState = $this->getRequestState();
-				$metaData = $this->createBackupx($requestState->date, $requestState->filenameBase, $requestState->sqlDumpPath, $requestState->sqlDumpFilepath, $requestState->zipFilepath, $requestState->nextStep);
-			} else {
-				$metaData = $this->createBackupx($date, $filenameBase, $sqlDumpPath, $sqlDumpFilepath, $zipFilepath);
-			}
-		} catch (\Exception $e) {
+			$metaData = $this->createBackupx($date, $filenameBase, $sqlDumpPath, $sqlDumpFilepath, $zipFilepath, $nextStep);
+		} 
+		catch (\Exception $e) {
 			$this->cleanup($sqlDumpFilepath, $zipFilepath);
 			throw $e;
 		}
